@@ -258,10 +258,20 @@ class GroupCommands(object):
                     "arn": alias_arn,
                     "arn_qualifier": q
                 }
+
+                # add environment variables to lambda function definition
+                environment_variables =  config['lambda_functions'][lambda_name]['environment_variables']
+                logging.info('function {0}, adding environment variables: {1}'.format(
+                    lambda_name, json.dumps(environment_variables)
+                ))
+
                 func_definition.append({
                     "Id": "{0}".format(lambda_name.lower()),
                     "FunctionArn": alias_arn,
                     "FunctionConfiguration": {
+                        "Environment": {
+                            "Variables": environment_variables
+                         },
                         "Executable": f['Configuration']['Handler'],
                         "MemorySize":
                             int(f['Configuration']['MemorySize']) * 1000,
@@ -284,7 +294,7 @@ class GroupCommands(object):
             config['lambda_functions'] = latest_funcs
             ll_arn = lmbv['Arn']
             logging.info("Created Function definition ARN:{0}".format(ll_arn))
-            config['func_def'] = {'id': ll['Id'], 'version_arn': ll_arn}
+            config['func_def'] = {'id': ll['Id'], 'version_arn': ll_arn, 'environment_variables': environment_variables}
             return ll_arn
         else:
             return
